@@ -6,6 +6,8 @@ The Next.js app remains a separate Node.js app and proxies browser API calls to 
 
 The deployed Worker is available at `https://truthlens-api.truthlens-ai.workers.dev`.
 
+The Cloudflare account already contains the Worker, D1 database, private R2 bucket, and analysis queues. The deployed API has passed remote smoke checks for analysis processing, media storage, report downloads, and deletion. Provider-key health checks pass. A synthetic consented inference completed through OpenRouter; a direct Gemini generation request returned HTTP 403 `PERMISSION_DENIED`, so check the Google AI Studio project/key's generation access before relying on Gemini as primary.
+
 ## Local setup
 
 From the project root:
