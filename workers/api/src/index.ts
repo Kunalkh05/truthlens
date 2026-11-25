@@ -125,7 +125,17 @@ function localFindings(id: string, media: MediaInfo | null) {
 }
 function parseModel(text: string): ModelResult | null {
   try {
-    const raw = JSON.parse(text.trim()) as Record<string, unknown>;
+    const clean = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    let parsed: unknown;
+    try { parsed = JSON.parse(clean); }
+    catch {
+      const start = clean.indexOf("{");
+      const end = clean.lastIndexOf("}");
+      if (start < 0 || end <= start) return null;
+      parsed = JSON.parse(clean.slice(start, end + 1));
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const raw = parsed as Record<string, unknown>;
     const assessments = ["Supported", "Mixed", "Unverified", "Contradicted", "Insufficient evidence"];
     if (!assessments.includes(String(raw.assessment)) || typeof raw.summary !== "string") return null;
     const mediaFindings = Array.isArray(raw.mediaFindings) ? raw.mediaFindings.slice(0, 12).flatMap((item) => {
@@ -199,7 +209,7 @@ async function callOpenRouter(
 ) {
   if (!env.OPENROUTER_API_KEY) return null;
   if (media && !media.mimeType.startsWith("image/")) return null;
-  const model = env.OPENROUTER_MODEL || "google/gemini-3.8-flash";
+  const model = env.OPENROUTER_MODEL || "openrouter/free";
   const userContent = media
     ? [
       { type: "text", text: instruction },
@@ -234,8 +244,14 @@ async function callOpenRouter(
     safeCode: "OPENROUTER_HTTP_" + response.status,
     retryable: response.status === 408 || response.status === 429 || response.status >= 500,
   });
-  const body = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
-  const result = parseModel(body.choices?.[0]?.message?.content || "");
+  const body = await response.json() as {
+    choices?: Array<{ message?: { content?: string | Array<{ type?: string; text?: string }> } }>;
+  };
+  const content = body.choices?.[0]?.message?.content;
+  const output = typeof content === "string"
+    ? content
+    : Array.isArray(content) ? content.map((item) => item.text || "").join("\n") : "";
+  const result = parseModel(output);
   if (!result) throw Object.assign(new Error("OpenRouter returned invalid structured data"), {
     safeCode: "OPENROUTER_INVALID_RESPONSE", retryable: false,
   });
@@ -286,13 +302,15 @@ async function runAnalysis(env: Env, analysisId: string): Promise<void> {
       try {
         providerResult = await callGemini(env, instruction, media);
       } catch (error) {
+        const primaryFailure = (error as { safeCode?: string }).safeCode || "GEMINI_UNAVAILABLE";
         if ((error as { retryable?: boolean }).retryable) {
           try {
             providerResult = await callOpenRouter(env, instruction, media);
-            if (!providerResult) providerError = "OPENROUTER_UNAVAILABLE_FOR_MEDIA_TYPE";
+            if (!providerResult) providerError = primaryFailure + ";OPENROUTER_UNAVAILABLE_FOR_MEDIA_TYPE";
           }
           catch (fallbackError) {
-            providerError = (fallbackError as { safeCode?: string }).safeCode || "OPENROUTER_UNAVAILABLE";
+            const fallbackFailure = (fallbackError as { safeCode?: string }).safeCode || "OPENROUTER_UNAVAILABLE";
+            providerError = primaryFailure + ";" + fallbackFailure;
           }
         } else providerError = (error as { safeCode?: string }).safeCode || "GEMINI_RESPONSE_UNAVAILABLE";
       }
@@ -466,7 +484,7 @@ async function createAnalysis(request: Request, env: Env): Promise<Response> {
 
 async function healthProviders(env: Env): Promise<Response> {
   const geminiModel = env.GEMINI_MODEL || "gemini-3.8-flash";
-  const routerModel = env.OPENROUTER_MODEL || "google/gemini-3.8-flash";
+  const routerModel = env.OPENROUTER_MODEL || "openrouter/free";
   const providers: Record<string, { configured: boolean; valid: boolean | null; model: string }> = {
     gemini: { configured: Boolean(env.GEMINI_API_KEY), valid: null, model: geminiModel },
     openrouter: { configured: Boolean(env.OPENROUTER_API_KEY), valid: null, model: routerModel },

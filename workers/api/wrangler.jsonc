@@ -7,7 +7,7 @@
   "vars": {
     "APP_ORIGIN": "http://localhost:3000",
     "GEMINI_MODEL": "gemini-3.8-flash",
-    "OPENROUTER_MODEL": "google/gemini-3.8-flash"
+    "OPENROUTER_MODEL": "openrouter/free"
   },
   "d1_databases": [{
     "binding": "DB",

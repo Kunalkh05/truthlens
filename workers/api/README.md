@@ -2,6 +2,8 @@
 
 This Worker provides the app's versioned API with D1, a private R2 bucket, and a Cloudflare Queue. Provider keys are Worker secrets and are never returned to the browser or stored in D1.
 
+Live endpoint: `https://truthlens-api.truthlens-ai.workers.dev`.
+
 ## Local run
 
 1. Install project dependencies from the repository root with `npm install`.
@@ -17,7 +19,7 @@ Wrangler simulates D1, R2, and Queues locally.
 
 - Uploads are capped at 50 MiB and stored in private R2.
 - External AI processing requires explicit consent.
-- Gemini is primary. OpenRouter is attempted only after a transient Gemini failure.
+- Gemini is primary. OpenRouter's free-model router is attempted only after a transient Gemini failure; availability and rate limits can still result in a partial report.
 - Inline AI media processing is capped at 14 MiB. Larger files receive a partial result.
 - OpenRouter fallback can receive claim text or images; audio/video fallback is skipped because that compatibility route is not configured for those media types.
 - User-supplied URLs are not fetched or treated as corroborating evidence.

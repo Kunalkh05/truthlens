@@ -59,8 +59,12 @@ try {
   if (!result?.disclaimer || !Array.isArray(result.methodsAndLimitations)) {
     throw new Error("Analysis result is missing its limitations or disclaimer.");
   }
+  const report = await request("/api/v1/analyses/" + encodeURIComponent(created.id) + "/reports", { method: "POST" });
+  if (!report?.downloadUrl) throw new Error("Report generation did not return a download link.");
+  const downloadedReport = await request(report.downloadUrl);
+  if (!downloadedReport?.disclaimer) throw new Error("Downloaded report is missing its disclaimer.");
   await request("/api/v1/analyses/" + encodeURIComponent(created.id), { method: "DELETE" });
-  console.log(`Smoke check passed: liveness, readiness, authenticated analysis, result, and deletion (${analysis.status}).`);
+  console.log(`Smoke check passed: liveness, readiness, authenticated analysis, result, report download, and deletion (${analysis.status}).`);
 
   if (process.env.VERIFY_PROVIDERS === "true") {
     const health = await request("/api/v1/providers/health");
