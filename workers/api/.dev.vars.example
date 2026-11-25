@@ -1,0 +1,4 @@
+# Copy this file to .dev.vars. Keep local secrets out of source control.
+APP_API_TOKEN=
+GEMINI_API_KEY=
+OPENROUTER_API_KEY=

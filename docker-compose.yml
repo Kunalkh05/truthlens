@@ -1,0 +1,26 @@
+services:
+  truthlens:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - SKM_MASTER_KEY=${SKM_MASTER_KEY:-truthlens-insecure-dev-master-kek-32bytes!}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+    volumes:
+      - truthlens-data:/app/data
+      - truthlens-storage:/app/storage
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  truthlens-data:
+  truthlens-storage:

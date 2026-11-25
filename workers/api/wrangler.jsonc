@@ -1,0 +1,31 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
+  "name": "truthlens-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-25",
+  "observability": { "enabled": true },
+  "vars": {
+    "APP_ORIGIN": "http://localhost:3000",
+    "GEMINI_MODEL": "gemini-3.8-flash",
+    "OPENROUTER_MODEL": "google/gemini-3.8-flash"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "truthlens-data",
+    "database_id": "94741804-db08-4526-aa9c-7dd2297aa1ab",
+    "migrations_dir": "migrations"
+  }],
+  "r2_buckets": [{
+    "binding": "MEDIA",
+    "bucket_name": "truthlens-private-media"
+  }],
+  "queues": {
+    "producers": [{ "binding": "ANALYSIS_QUEUE", "queue": "truthlens-analysis" }],
+    "consumers": [{
+      "queue": "truthlens-analysis",
+      "max_batch_size": 1,
+      "max_retries": 3,
+      "dead_letter_queue": "truthlens-analysis-dlq"
+    }]
+  }
+}

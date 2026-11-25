@@ -1,0 +1,43 @@
+{
+  "name": "truthlens-ai",
+  "version": "1.0.0",
+  "description": "TruthLens AI — Media Forensics and Claim Verification Platform",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "cf:dev": "wrangler dev --config workers/api/wrangler.jsonc",
+    "cf:types": "wrangler types workers/api/worker-configuration.d.ts --config workers/api/wrangler.jsonc",
+    "cf:check": "tsc --project workers/api/tsconfig.json",
+    "cf:smoke": "node workers/api/smoke.mjs",
+    "cf:migrate:local": "wrangler d1 migrations apply truthlens-data --local --config workers/api/wrangler.jsonc",
+    "cf:migrate:remote": "wrangler d1 migrations apply truthlens-data --remote --config workers/api/wrangler.jsonc",
+    "cf:deploy": "wrangler deploy --config workers/api/wrangler.jsonc"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "next": "^15.1.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^2.5.5",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261125.1",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "wrangler": "^4.168.0"
+  }
+}
