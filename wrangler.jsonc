@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "truthlens-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "TRUTHLENS_CLOUDFLARE_API_URL": "https://truthlens-api.truthlens-ai.workers.dev"
+  },
+  "services": [{
+    "binding": "TRUTHLENS_API",
+    "service": "truthlens-api"
+  }],
+  "observability": { "enabled": true }
+}

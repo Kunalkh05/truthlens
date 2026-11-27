@@ -1,13 +1,25 @@
 import { NextRequest } from "next/server";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type RouteContext = { params: Promise<{ path: string[] }> };
+type CloudEnv = {
+  TRUTHLENS_CLOUDFLARE_API_URL?: string;
+  TRUTHLENS_CLOUDFLARE_API_TOKEN?: string;
+  TRUTHLENS_API?: { fetch(request: Request): Promise<Response> };
+};
 
 async function proxy(request: NextRequest, context: RouteContext): Promise<Response> {
-  const baseUrl = process.env.TRUTHLENS_CLOUDFLARE_API_URL;
-  const token = process.env.TRUTHLENS_CLOUDFLARE_API_TOKEN;
+  let cloudEnv: CloudEnv = {};
+  try {
+    cloudEnv = getCloudflareContext().env as CloudEnv;
+  } catch {
+    // Next.js development can use the local .env.local fallback below.
+  }
+  const baseUrl = cloudEnv.TRUTHLENS_CLOUDFLARE_API_URL || process.env.TRUTHLENS_CLOUDFLARE_API_URL;
+  const token = cloudEnv.TRUTHLENS_CLOUDFLARE_API_TOKEN || process.env.TRUTHLENS_CLOUDFLARE_API_TOKEN;
   if (!baseUrl || !token) {
     return Response.json(
       { error: { code: "CLOUD_BACKEND_NOT_CONFIGURED", message: "Cloudflare API settings are missing on the server." } },
@@ -33,7 +45,10 @@ async function proxy(request: NextRequest, context: RouteContext): Promise<Respo
   if (request.method !== "GET" && request.method !== "HEAD") init.body = await request.arrayBuffer();
   let upstream: Response;
   try {
-    upstream = await fetch(target, init);
+    const apiService = cloudEnv.TRUTHLENS_API;
+    upstream = apiService
+      ? await apiService.fetch(new Request(target, init))
+      : await fetch(target, init);
   } catch {
     return Response.json(
       { error: { code: "CLOUD_BACKEND_UNAVAILABLE", message: "The Cloudflare backend could not be reached." } },

@@ -19,7 +19,7 @@ The backend is deployed at **https://truthlens-api.truthlens-ai.workers.dev**. T
 
 ## Hardware used
 
-- A Mac computer used for development. **Fill in the exact Mac model, processor, and RAM from About This Mac.**
+- MacBook Pro (Apple M1 chip, 8 GB unified memory)
 - Internet connection for package installation and optional cloud AI analysis
 - A modern web browser to use the application
 

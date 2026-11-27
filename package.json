@@ -17,7 +17,10 @@
     "cf:smoke": "node workers/api/smoke.mjs",
     "cf:migrate:local": "wrangler d1 migrations apply truthlens-data --local --config workers/api/wrangler.jsonc",
     "cf:migrate:remote": "wrangler d1 migrations apply truthlens-data --remote --config workers/api/wrangler.jsonc",
-    "cf:deploy": "wrangler deploy --config workers/api/wrangler.jsonc"
+    "cf:deploy": "wrangler deploy --config workers/api/wrangler.jsonc",
+    "cf:web:build": "node scripts/cf-web-build.mjs",
+    "cf:web:preview": "npm run cf:web:build && opennextjs-cloudflare preview",
+    "cf:web:deploy": "npm run cf:web:build && opennextjs-cloudflare deploy -- --keep-vars"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -30,6 +33,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261125.1",
+    "@opennextjs/cloudflare": "^1.20.18",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
@@ -39,5 +43,10 @@
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
     "wrangler": "^4.168.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "esbuild@0.21.5": true,
+    "workerd@1.20261123.1": true
   }
 }

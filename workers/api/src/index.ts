@@ -689,6 +689,48 @@ async function handleNested(request: Request, env: Env, url: URL): Promise<Respo
 async function handle(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   if (request.method === "OPTIONS") return addCors(new Response(null, { status: 204 }), request, env);
+  if (url.pathname === "/" && request.method === "GET") {
+    const page = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131a">
+  <meta name="robots" content="noindex,nofollow">
+  <title>TruthLens API</title>
+  <style>
+    :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#10131a;color:#edf0f6}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 0%,#1d2940 0,transparent 55%),#10131a}
+    main{width:min(100%,620px);padding:clamp(26px,6vw,48px);border:1px solid #303949;border-radius:20px;background:#171c26;box-shadow:0 24px 80px #0005}
+    .mark{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:#c4f36b;color:#17220a;font-weight:800;font-size:22px}
+    h1{margin:26px 0 10px;font-size:clamp(28px,6vw,40px);letter-spacing:-.04em}p{color:#aab3c3;line-height:1.65;margin:0}
+    .status{display:flex;align-items:center;gap:10px;margin:26px 0;padding:14px 16px;border:1px solid #344332;border-radius:12px;background:#1b281d;color:#d6f6bd;font-weight:600}
+    .dot{width:9px;height:9px;border-radius:50%;background:#a6e66a;box-shadow:0 0 14px #a6e66a88}
+    nav{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:10px;background:#c4f36b;color:#17220a;font-weight:700;text-decoration:none}a.secondary{background:#252d3b;color:#e1e7f0;border:1px solid #3a4558}a:hover{filter:brightness(1.08)}a:focus-visible{outline:3px solid #fff;outline-offset:3px}
+    .note{margin-top:24px;padding-top:20px;border-top:1px solid #303949;font-size:14px}
+  </style>
+</head>
+<body><main>
+  <div class="mark" aria-hidden="true">T</div>
+  <h1>TruthLens API</h1>
+  <p>The verification service is online. Open the TruthLens app to submit a claim or media file; API routes require the app’s configured credentials.</p>
+  <div class="status"><span class="dot" aria-hidden="true"></span><span>Service is responding</span></div>
+  <nav aria-label="Service links">
+    <a href="http://localhost:3000">Open local app</a>
+    <a class="secondary" href="/health/live">Live health</a>
+    <a class="secondary" href="/health/ready">Readiness</a>
+  </nav>
+  <p class="note">This address hosts the backend API. The app preview is available on this computer at localhost:3000 while its development server is running.</p>
+</main></body></html>`;
+    return addCors(new Response(page, { headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "Referrer-Policy": "no-referrer",
+      "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+    } }), request, env);
+  }
   if (url.pathname === "/health/live" && request.method === "GET") {
     return addCors(json({ status: "ok", service: "truthlens-api", version: "cloudflare-mvp-1" }), request, env);
   }
